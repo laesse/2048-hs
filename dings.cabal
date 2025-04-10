@@ -1,0 +1,45 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           dings
+version:        0.1.0.0
+description:    the 2048 written in haskell
+author:         Lars
+maintainer:     volkhlar@students.zhaw.ch
+copyright:      2025 Lars
+license:        WTFPL
+build-type:     Simple
+extra-source-files:
+    README.md
+
+library
+  exposed-modules:
+      Main
+  other-modules:
+      Paths_dings
+  autogen-modules:
+      Paths_dings
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , random >=1.3
+  default-language: Haskell2010
+
+executable main
+  main-is: Main.hs
+  other-modules:
+      Paths_dings
+  autogen-modules:
+      Paths_dings
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , random >=1.3
+  default-language: Haskell2010

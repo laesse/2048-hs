@@ -1,0 +1,72 @@
+# The name of the package:
+name: dings
+# The version of the package:
+version: 0.1.0.0
+# The GitHub repository for the package (optional):
+# github:              "githubuser/helloworld"
+# The licence for the use of the package's files (optional):
+license: WTFPL
+# The author of the package (optional):
+author: "Lars"
+# The email address to contact the maintainer of the package (optional):
+maintainer: "volkhlar@students.zhaw.ch"
+# The copyright for the package's files (optional):
+copyright: "2025 Lars"
+
+# Extra files (if any) to be distributed with the source files of the
+# package:
+extra-source-files:
+  - README.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description: the 2048 written in haskell
+# Dependencies applicable to all components:
+dependencies:
+  - base >= 4.7 && < 5
+  - random >= 1.3
+
+# GHC options (if any) common to all components:
+ghc-options:
+  # These GHC flags affect which warnings GHC will emit:
+  - -Wall
+  - -Wcompat
+  - -Widentities
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wmissing-export-lists
+  - -Wmissing-home-modules
+  - -Wpartial-fields
+  - -Wredundant-constraints
+
+# The main (unnamed) library component of the package (if it has one):
+library:
+  # Directories containing source files:
+  source-dirs: src
+
+# The executable components of the package (if it has any):
+executables:
+  # The executable component named 'helloworld-exe':
+  main:
+    # The source file exporting the 'main' function:
+    main: Main.hs
+    # Directories containing source files:
+    source-dirs: src
+    # GHC options applicable to the component:
+    ghc-options:
+      # Link the program with the 'threaded' version of GHC's runtime system:
+      - -threaded
+      # Make all of GHC's runtime system (RTS) options available:
+      - -rtsopts
+      # Compile so as to use simultaneous threads when running the program,
+      # based on how many processors are in the machine.
+      - -with-rtsopts=-N
+    # Dependencies applicable to the component:
+    # dependencies:
+    # The main library of the package:
+    ##- main
