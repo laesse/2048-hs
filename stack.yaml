@@ -10,8 +10,8 @@
 #
 # snapshot: lts-22.28
 # snapshot: nightly-2024-07-05
-# snapshot: ghc-9.6.6
-#
+# system-ghc: true
+
 # The location of a snapshot can be provided as a file or url. Stack assumes
 # a snapshot provided as a file might change, whereas a url resource does not.
 #
@@ -19,6 +19,9 @@
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 snapshot:
   url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/23/18.yaml
+
+snapshot: 
+  compiler: ghc-9.4.8
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,6 +45,7 @@ packages:
 #
 extra-deps:
   - random-1.3.1@sha256:0b4f649c3e78713b2ccad1535251ee34b148237fb2229d7058c2b1d9ccc324b8,6004
+  - splitmix-0.1.1@sha256:8f92088f1c51c8d4569279a07565f8aa6b534a6735615b2295d2961dec8f1783,6225
 # Override default flag values for project packages and extra-deps
 # flags: {}
 
