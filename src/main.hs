@@ -1,7 +1,7 @@
 module Main where
 
 import Control.Monad.IO.Class (MonadIO)
-import Data.List (find)
+import Data.List (find, transpose)
 import Data.Maybe (isJust, isNothing)
 import System.IO
 import System.Random (Random (..), getStdRandom)
@@ -46,13 +46,44 @@ makeMove input state = do
   let nextState = putNewTile newTileLoc state2
   return nextState
 
+rotateArray :: Input -> GameState -> GameState
+rotateArray input state = case input of
+  InRight -> map reverse state
+  InLeft -> state
+  InDown -> transpose state
+  InUp -> transpose $ map reverse state
+
+rotateArrayBack :: Input -> GameState -> GameState
+rotateArrayBack input state = case input of
+  InRight -> map reverse state
+  InLeft -> state
+  InDown -> transpose state
+  InUp -> map reverse $ transpose state
+
+rowMergers :: [Integer] -> [Integer]
+rowMergers row = case row of
+  x : y : xs | x /= 0 && x == y -> (x * 2) : rowMergers xs ++ [0]
+  x : xs -> x : rowMergers xs
+  [] -> []
+
+moveRow :: [Integer] -> [Integer]
+moveRow row = case row of
+  x : xs
+    | x == 0 -> moveRow xs ++ [x]
+    | otherwise -> x : moveRow xs
+  [] -> []
+
 processInput :: Input -> GameState -> GameState
-processInput input state = state
+processInput input state = do
+  let rotatedState = rotateArray input state
+  let movedState = map moveRow rotatedState
+  let mergedState = map rowMergers movedState
+  rotateArrayBack input mergedState
 
 gameStateGet :: GameState -> (Int, Int) -> Integer
 gameStateGet state (x, y) = (state !! x) !! y
 
-getRandomLoc :: (MonadIO m) => [[Integer]] -> m (Int, Int)
+getRandomLoc :: (MonadIO m) => GameState -> m (Int, Int)
 getRandomLoc state = do
   x <- randRange 0 3
   y <- randRange 0 3
