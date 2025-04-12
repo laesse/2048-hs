@@ -6,12 +6,20 @@ import Data.Maybe (isJust, isNothing)
 import System.IO
 import System.Random (Random (..), getStdRandom)
 
-type GameState = [[Integer]]
+-- type GameState = [[Integer]]
+--
+type Grid = [[Integer]]
+
+data GameState = GameState
+  { grid :: Grid
+  , score :: Integer
+  }
+  deriving (Show, Eq)
 
 getGameStateStr :: GameState -> String
-getGameStateStr state = getGameStateStr_ state ""
+getGameStateStr state = getGameStateStr_ (grid state) ""
  where
-  getGameStateStr_ :: GameState -> String -> String
+  getGameStateStr_ :: Grid -> String -> String
   getGameStateStr_ rest acc = case rest of
     [] -> acc
     row : rows -> getRow_ row ++ "\n" ++ getGameStateStr_ rows acc
@@ -36,25 +44,27 @@ getInput = do
 
   maybe getInput return val
 
-putNewTile :: (Int, Int, Integer) -> GameState -> GameState
-putNewTile (y, x, value) = mapi (\row rowi -> mapi (\val vali -> if x == vali && y == rowi then value else val) row)
+placeNewRandomTile :: (MonadIO m) => Grid -> m Grid
+placeNewRandomTile currGrid = do
+  (y, x) <- getRandomLoc currGrid
+  newTileVal <- randRange 1 2
+  return (mapi (\row rowi -> mapi (\val vali -> if x == vali && y == rowi then newTileVal * 2 else val) row) currGrid)
 
 makeMove :: (MonadIO m) => Input -> GameState -> m GameState
-makeMove input state = do
-  let state2 = processInput input state
-  newTileLoc <- randomPlace state
-  let nextState = putNewTile newTileLoc state2
-  return nextState
+makeMove input startState = do
+  let movedState = processInput input startState
+  gridWithRandomPlacement <- placeNewRandomTile (grid movedState)
+  return $ GameState gridWithRandomPlacement (score movedState)
 
-rotateArray :: Input -> GameState -> GameState
-rotateArray input state = case input of
+rotateGrid :: Input -> Grid -> Grid
+rotateGrid input state = case input of
   InRight -> map reverse state
   InLeft -> state
   InDown -> transpose state
   InUp -> transpose $ map reverse state
 
-rotateArrayBack :: Input -> GameState -> GameState
-rotateArrayBack input state = case input of
+rotateGridBack :: Input -> Grid -> Grid
+rotateGridBack input state = case input of
   InRight -> map reverse state
   InLeft -> state
   InDown -> transpose state
@@ -75,15 +85,15 @@ moveRow row = case row of
 
 processInput :: Input -> GameState -> GameState
 processInput input state = do
-  let rotatedState = rotateArray input state
+  let rotatedState = rotateGrid input (grid state)
   let movedState = map moveRow rotatedState
-  let mergedState = map rowMergers movedState
-  rotateArrayBack input mergedState
+  let mergedState = map rowMergers movedState -- todo calc new score
+  GameState (rotateGridBack input mergedState) (score state)
 
-gameStateGet :: GameState -> (Int, Int) -> Integer
+gameStateGet :: Grid -> (Int, Int) -> Integer
 gameStateGet state (x, y) = (state !! x) !! y
 
-getRandomLoc :: (MonadIO m) => GameState -> m (Int, Int)
+getRandomLoc :: (MonadIO m) => Grid -> m (Int, Int)
 getRandomLoc state = do
   x <- randRange 0 3
   y <- randRange 0 3
@@ -92,7 +102,7 @@ getRandomLoc state = do
     then return (x, y)
     else getRandomLoc state
 
-randomPlace :: (MonadIO m) => GameState -> m (Int, Int, Integer)
+randomPlace :: (MonadIO m) => Grid -> m (Int, Int, Integer)
 randomPlace state = do
   (x, y) <- getRandomLoc state
   val <- randRange 1 2
@@ -108,14 +118,18 @@ mainGameLoop state = do
   print $ show inputValue
   nextState <- makeMove inputValue state
 
-  let gameOver = isNothing $ find (isJust . find (== 0)) nextState
+  let gameOver = isNothing $ find (isJust . find (== 0)) (grid nextState)
 
   if gameOver
     then putStrLn "game over"
     else mainGameLoop nextState
 
-initialState :: GameState
-initialState = replicate 4 $ replicate 4 0
+initialState :: (MonadIO m) => m GameState
+initialState = do
+  let initalGrid = replicate 4 $ replicate 4 0
+  firstPlacement <- placeNewRandomTile initalGrid
+  seccondPlacement <- placeNewRandomTile firstPlacement
+  return $ GameState seccondPlacement 0
 
 mapi :: (a -> Int -> a) -> [a] -> [a]
 mapi mapFn lst = mapi_ lst 0
@@ -128,5 +142,6 @@ main = do
   hSetBuffering stdin NoBuffering
   hSetBuffering stdout NoBuffering
   putStrLn "Welcome to 2048-hs"
-  mainGameLoop initialState
+  state <- initialState
+  mainGameLoop state
   putStrLn "Thanks for playing"
