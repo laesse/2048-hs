@@ -8,8 +8,8 @@ import System.Random (Random (..), getStdRandom)
 type Grid = [[Integer]]
 
 data GameState = GameState
-  { grid :: Grid
-  , score :: Integer
+  { grid :: Grid,
+    score :: Integer
   }
   deriving (Show, Eq)
 
@@ -47,12 +47,12 @@ emptyRow = intercalate "│" (replicate 4 $ replicate cellSize ' ') ++ "\n"
 
 getGameStateStr :: GameState -> String
 getGameStateStr state = "\ESCcScore: " ++ show (score state) ++ "\n" ++ getGridStr_ (grid state)
- where
-  getGridStr_ :: Grid -> String
-  getGridStr_ grid_ = intercalate lineRow $ map (\row -> emptyRow ++ topRow row ++ getRow_ row ++ "\n" ++ bottomRow row ++ emptyRow) grid_
-   where
-    getRow_ :: [Integer] -> String
-    getRow_ row = intercalate "│" $ map (\i -> " " ++ zeroOr i " " (colorSwitch i backgroundEscapeRGB ++ "║") ++ padAround (cellSize - 4 - length (show i)) (zeroOr i " " (show i)) ++ zeroOr i " " ("║" ++ resetEscape) ++ " ") row
+  where
+    getGridStr_ :: Grid -> String
+    getGridStr_ grid_ = intercalate lineRow $ map (\row -> emptyRow ++ topRow row ++ getRow_ row ++ "\n" ++ bottomRow row ++ emptyRow) grid_
+      where
+        getRow_ :: [Integer] -> String
+        getRow_ row = intercalate "│" $ map (\i -> " " ++ zeroOr i " " (colorSwitch i backgroundEscapeRGB ++ "║") ++ padAround (cellSize - 4 - length (show i)) (zeroOr i " " (show i)) ++ zeroOr i " " ("║" ++ resetEscape) ++ " ") row
 
 zeroOr :: Integer -> a -> a -> a
 zeroOr 0 zeroV _ = zeroV
@@ -98,35 +98,35 @@ getInput = do
   putStr "\n"
 
   maybe getInput return val
- where
-  parseInput rawIn =
-    if rawIn == '\ESC'
-      -- arrow escape codes "\ESC[(A|D|B|C)"
-      then do
-        seccond <- getChar
-        ( if seccond == '['
-            then do
-              dir <- getChar
-              return
-                ( case dir of
-                    'A' -> Just InUp
-                    'D' -> Just InLeft
-                    'B' -> Just InDown
-                    'C' -> Just InRight
-                    _ -> Nothing
-                )
-            else return Nothing
-          )
-      else
-        -- normal wasd
-        return
-          ( case rawIn of
-              'w' -> Just InUp
-              'd' -> Just InRight
-              's' -> Just InDown
-              'a' -> Just InLeft
-              _ -> Nothing
-          )
+  where
+    parseInput rawIn =
+      if rawIn == '\ESC'
+        -- arrow escape codes "\ESC[(A|D|B|C)"
+        then do
+          seccond <- getChar
+          ( if seccond == '['
+              then do
+                dir <- getChar
+                return
+                  ( case dir of
+                      'A' -> Just InUp
+                      'D' -> Just InLeft
+                      'B' -> Just InDown
+                      'C' -> Just InRight
+                      _ -> Nothing
+                  )
+              else return Nothing
+            )
+        else
+          -- normal wasd
+          return
+            ( case rawIn of
+                'w' -> Just InUp
+                'd' -> Just InRight
+                's' -> Just InDown
+                'a' -> Just InLeft
+                _ -> Nothing
+            )
 
 {-
  - #########################
@@ -149,12 +149,12 @@ placeNewRandomTile currGrid = do
   (y, x) <- getRandomLoc currGrid
   newTileVal <- randRange 1 2
   return (mapi (\row rowi -> mapi (\val vali -> if x == vali && y == rowi then newTileVal * 2 else val) row) currGrid)
- where
-  mapi :: (a -> Int -> a) -> [a] -> [a]
-  mapi mapFn lst = mapi_ lst 0
-   where
-    mapi_ [] _ = []
-    mapi_ (x : xs) i = mapFn x i : mapi_ xs (i + 1)
+  where
+    mapi :: (a -> Int -> a) -> [a] -> [a]
+    mapi mapFn lst = mapi_ lst 0
+      where
+        mapi_ [] _ = []
+        mapi_ (x : xs) i = mapFn x i : mapi_ xs (i + 1)
 
 getRandomLoc :: (MonadIO m) => Grid -> m (Int, Int)
 getRandomLoc state = do
@@ -164,9 +164,9 @@ getRandomLoc state = do
   if val == 0
     then return (x, y)
     else getRandomLoc state
- where
-  gridGet :: Grid -> (Int, Int) -> Integer
-  gridGet grid_ (x, y) = (grid_ !! x) !! y
+  where
+    gridGet :: Grid -> (Int, Int) -> Integer
+    gridGet grid_ (x, y) = (grid_ !! x) !! y
 
 randRange :: (MonadIO m, Random a) => a -> a -> m a
 randRange lo hi = getStdRandom (randomR (lo, hi))
@@ -174,16 +174,16 @@ randRange lo hi = getStdRandom (randomR (lo, hi))
 -- takes in a row and returns a tuple with the updated row and the addition to the score
 rowMergers :: [Integer] -> ([Integer], Integer)
 rowMergers row = rowMergersInner ([], row, 0)
- where
-  rowMergersInner :: ([Integer], [Integer], Integer) -> ([Integer], Integer)
-  rowMergersInner (rowAcc, restRow, scoreAcc) = case restRow of
-    -- if the first 2 element in the remaining row are not zero and the same we merge them and add them to the back of the result accumulator & update the score accumulator
-    x : y : xs | x /= 0 && x == y -> rowMergersInner (rowAcc ++ [x * 2], xs, scoreAcc + (2 * x))
-    -- if we still have elements left we add them to the back of the accumulator - no score update
-    x : xs -> rowMergersInner (rowAcc ++ [x], xs, scoreAcc)
-    -- recursive end condition no chars left to process in the row
-    -- fill up accumulator with zeros since they got destroyed potentially by mergers
-    [] -> (rowAcc ++ replicate (gridSize - length rowAcc) 0, scoreAcc)
+  where
+    rowMergersInner :: ([Integer], [Integer], Integer) -> ([Integer], Integer)
+    rowMergersInner (rowAcc, restRow, scoreAcc) = case restRow of
+      -- if the first 2 element in the remaining row are not zero and the same we merge them and add them to the back of the result accumulator & update the score accumulator
+      x : y : xs | x /= 0 && x == y -> rowMergersInner (rowAcc ++ [x * 2], xs, scoreAcc + (2 * x))
+      -- if we still have elements left we add them to the back of the accumulator - no score update
+      x : xs -> rowMergersInner (rowAcc ++ [x], xs, scoreAcc)
+      -- recursive end condition no chars left to process in the row
+      -- fill up accumulator with zeros since they potentially got destroyed by mergers
+      [] -> (rowAcc ++ replicate (gridSize - length rowAcc) 0, scoreAcc)
 
 moveRow :: [Integer] -> [Integer]
 moveRow row = case row of
@@ -199,20 +199,20 @@ processInput input state = do
 
   let (mergedGrid, scores) = unzip $ map rowMergers movedGrid
   GameState (rotateGridBack input mergedGrid) (score state + sum scores)
- where
-  rotateGrid :: Input -> Grid -> Grid
-  rotateGrid input_ grid_ = case input_ of
-    InRight -> map reverse grid_
-    InLeft -> grid_
-    InUp -> transpose grid_
-    InDown -> map reverse $ transpose grid_
+  where
+    rotateGrid :: Input -> Grid -> Grid
+    rotateGrid input_ grid_ = case input_ of
+      InRight -> map reverse grid_
+      InLeft -> grid_
+      InUp -> transpose grid_
+      InDown -> map reverse $ transpose grid_
 
-  rotateGridBack :: Input -> Grid -> Grid
-  rotateGridBack input_ grid_ = case input_ of
-    InRight -> map reverse grid_
-    InLeft -> grid_
-    InUp -> transpose grid_
-    InDown -> transpose $ map reverse grid_
+    rotateGridBack :: Input -> Grid -> Grid
+    rotateGridBack input_ grid_ = case input_ of
+      InRight -> map reverse grid_
+      InLeft -> grid_
+      InUp -> transpose grid_
+      InDown -> transpose $ map reverse grid_
 
 {-
  - #########################
@@ -226,22 +226,22 @@ mainGameLoop state = do
   inputValue <- getInput
   nextState <- update inputValue state
 
-  if isGameOver state
+  if isGameOver nextState
     then do
       draw nextState
       putStrLn "game over"
     else mainGameLoop nextState
- where
-  draw :: GameState -> IO ()
-  draw state_ = do
-    putStrLn $ getGameStateStr state_
+  where
+    draw :: GameState -> IO ()
+    draw state_ = do
+      putStrLn $ getGameStateStr state_
 
-  isGameOver :: GameState -> Bool
-  isGameOver state_ =
-    (state_ == processInput InDown state_)
-      && (state_ == processInput InRight state_)
-      && (state_ == processInput InLeft state_)
-      && (state_ == processInput InUp state_)
+    isGameOver :: GameState -> Bool
+    isGameOver state_ =
+      (state_ == processInput InDown state_)
+        && (state_ == processInput InRight state_)
+        && (state_ == processInput InLeft state_)
+        && (state_ == processInput InUp state_)
 
 initialState :: (MonadIO m) => m GameState
 initialState = do
