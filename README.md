@@ -79,6 +79,20 @@ getInput = do
 The key idea is to avoid implementing the tile-shifting logic separately for all four directions. Instead, rotate the board so that every move becomes a left move, apply the left-shift logic once, and then rotate the board back.
 
 ```Haskell
+-- takes in a row and returns a tuple with the updated row and the addition to the score
+rowMergers :: [Integer] -> ([Integer], Integer)
+rowMergers row = rowMergersInner ([], row, 0)
+  where
+    rowMergersInner :: ([Integer], [Integer], Integer) -> ([Integer], Integer)
+    rowMergersInner (rowAcc, restRow, scoreAcc) = case restRow of
+      -- if the first 2 element in the remaining row are not zero and the same we merge them and add them to the back of the result accumulator & update the score accumulator
+      x : y : xs | x /= 0 && x == y -> rowMergersInner (rowAcc ++ [x * 2], xs, scoreAcc + (2 * x))
+      -- if we still have elements left we add them to the back of the accumulator - no score update
+      x : xs -> rowMergersInner (rowAcc ++ [x], xs, scoreAcc)
+      -- recursive end condition no chars left to process in the row
+      -- fill up accumulator with zeros since they potentially got destroyed by mergers
+      [] -> (rowAcc ++ replicate (gridSize - length rowAcc) 0, scoreAcc)
+
 processInput :: Input -> GameState -> GameState
 processInput input state = do
   let rotatedGrid = rotateGrid input (grid state)
@@ -96,10 +110,7 @@ processInput input state = do
 
   rotateGridBack :: Input -> Grid -> Grid
   rotateGridBack input_ grid_ = case input_ of
-    InRight -> map reverse grid_
-    InLeft -> grid_
-    InUp -> transpose grid_
-    InDown -> transpose $ map reverse grid_
+  ...
 ```
 
 ### drawing
