@@ -76,8 +76,16 @@ getInput = do
 ```
 
 ### updating the board
-The key idea is to avoid implementing the tile-shifting logic separately for all four directions. Instead, rotate the board so that every move becomes a left move, apply the left-shift logic once, and then rotate the board back.
+The key idea is to avoid implementing the tile-shifting logic separately for all four directions. Instead, rotate the board so that every move becomes a left move, apply the left-shift logic once per line, and then rotate the board back.
 
+The following animation shows the algorithm at work 
+
+https://github.com/user-attachments/assets/806414e6-90db-4e3a-b8e4-2ce5c8aba327
+
+
+After this we pick a random spot on the board an place a 2 or 4 randomly.
+
+Code for row mergers algorithm.
 ```Haskell
 -- takes in a row and returns a tuple with the updated row and the addition to the score
 rowMergers :: [Integer] -> ([Integer], Integer)
