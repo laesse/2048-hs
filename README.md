@@ -4,6 +4,9 @@ Another 2048 implementation in Haskell.
 
 Writen for my Haskell course @ ZHAW.
 
+<img width="388" alt="image" src="https://github.com/user-attachments/assets/1f24f145-160e-4512-99dc-08db5613b4b4" />
+
+
 ## interesting bits
 Some interesting bits from the code
 ### main game loop
